@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8" />
+<title>Canvas</title>
+<script type="text/javascript">
+var cvs, ctx;
+window.onload=function(){
+    cvs=document.getElementById("cvs");
+    ctx=cvs.getContext("2d");
+};
+// 影像顏色反轉
+function invertColor(){
+    // 將圖片每一個像素抓出來
+    var pixels=ctx.getImageData(0, 0, cvs.width, cvs.height); // ImageData 物件
+    var data=pixels.data; // 為一陣列,存放所有像素,一個像素佔據 4 個資料 (byte)-->r, g, b, a (a:透明度)(範圍 0~255)
+    for (var i=0;i<data.length;i+=4){
+        data[i]=255-data[i]; // 紅
+        data[i+1]=255-data[i+1]; // 綠
+        data[i+2]=255-data[i+2]; // 藍
+    }
+    ctx.putImageData(pixels, 0, 0); // 放回去
+}
+function loadFile(input){
+    var picture_width;
+    var picture_height;
+    let img_file=input.files[0];
+    let img_src=URL.createObjectURL(img_file); // URL 是系統內建物件，建立物件的 URL,把檔案物件轉換成網址型態
+    let img_img = new Image();
+    img_img.src=img_src;
+    img_img.onload=function(){
+        picture_width=this.width;
+        picture_height=this.height;
+        document.getElementById("cvs").width=picture_width;
+        document.getElementById("cvs").height=picture_height;
+        // alert(picture_width+" "+picture_height);
+        var file=input.files[0]; // files 是檔案物件 input 的陣列
+        var src=URL.createObjectURL(file); // URL 是系統內建物件，建立物件的 URL,把檔案物件轉換成網址型態
+        var img=new Image();
+        img.src=src; // 影像物件載入網址
+        img.onload=function(){
+            ctx.drawImage(this, 0, 0, cvs.width, cvs.height);
+        };
+        cvs=document.getElementById("cvs");
+        ctx=cvs.getContext("2d");
+    };
+}
+function saveFile(){
+    var link=document.getElementById("download"); // 超連結物件
+    link.download="image.jpg"; // 設定 download 屬性，是預設的檔案名稱
+    link.href=cvs.toDataURL("image/jpeg"); // 用cvs物件設定超連結，指定輸出格式
+    link.click(); // 用程式主動觸發點擊事件
+}
+</script>
+</head>
+<div>
+    <!-- 讓使用者上傳圖片，上傳後觸發事件傳入 -->
+    <input type="file" onchange="loadFile(this);" />
+    <!-- 輸出檔案，讓使用者下載 -->
+    <button onclick="saveFile();">輸出檔案</button>
+    <a id="download"></a><!-- 用超連結來下載 -->
+    <button onclick="invertColor();">顏色反轉!</button>
+</div>
+<body>
+<!-- 這是畫布 -->
+<canvas id="cvs" width="800" height="600" style="border: 1px solid #000000;"></canvas>
+</body>
+</html>
